@@ -1,0 +1,12 @@
+{
+  "name": "model-desk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted multi-provider AI workspace",
+  "scripts": {
+    "start": "node --experimental-sqlite server.js"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

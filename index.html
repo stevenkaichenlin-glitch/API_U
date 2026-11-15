@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#222724">
+  <title>Model Desk — AI workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f6f7f3;
+      --white: #fff;
+      --ink: #202823;
+      --muted: #78817b;
+      --line: #e8ebe5;
+      --green: #16764f;
+      --green-soft: #e8f4ec;
+      --yellow: #f1c96a;
+      --shadow: 0 12px 38px rgba(34, 49, 40, .055);
+      font-family: "DM Sans", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; color: var(--ink); background: var(--paper); }
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+    .app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { display: flex; flex-direction: column; min-height: 100vh; padding: 23px 13px 15px; color: #e4e9e5; background: #222724; border-right: 1px solid #303733; }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 0 9px; color: #f5f7f5; font-family: Manrope, sans-serif; font-size: 17px; font-weight: 750; letter-spacing: 0; }
+    .brand-mark { display: grid; place-items: center; width: 28px; height: 28px; color: white; background: #277653; border-radius: 7px; }
+    .brand-mark svg { width: 17px; height: 17px; }
+    .section-label { margin: 30px 10px 9px; color: #87918a; font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+    .side-link { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 36px; padding: 0 10px; color: #bdc5bf; text-align: left; background: transparent; border: 0; border-radius: 6px; cursor: pointer; font-size: 11px; }
+    .side-link svg { width: 15px; height: 15px; color: #939d96; }
+    .side-link:hover { color: #fff; background: #2c332f; }
+    .side-link.active { color: #fff; background: #343c37; font-weight: 600; }
+    .side-link.active svg { color: #89c8a4; }
+    .side-link .side-count { margin-left: auto; color: #89918c; font-size: 10px; }
+    [hidden] { display: none !important; }
+    .main { display: flex; flex-direction: column; min-width: 0; min-height: 100vh; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; height: 62px; padding: 0 35px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.62); }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; color: #858d87; font-size: 11px; }
+    .breadcrumb strong { color: #3a443e; font-weight: 600; }
+    .crumb-dot { width: 4px; height: 4px; background: #b0b7b1; border-radius: 50%; }
+    .top-actions { display: flex; align-items: center; gap: 15px; }
+    .connection-summary { color: #7d877f; font-size: 10px; }
+    .icon-button { display: grid; place-items: center; width: 32px; height: 32px; color: #657069; background: transparent; border: 1px solid transparent; border-radius: 7px; cursor: pointer; }
+    .icon-button:hover { background: #fff; border-color: var(--line); }
+    .icon-button svg { width: 16px; height: 16px; }
+    .connect-button { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; color: #fff; background: var(--green); border: 0; border-radius: 7px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .connect-button:hover { background: #106643; }
+    .connect-button svg { width: 14px; height: 14px; }
+    .content { width: min(1240px, 100%); margin: 0 auto; padding: 43px 35px 30px; }
+    .api-connections { max-width: 760px; margin-top: 25px; padding: 0 18px; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .api-connections .provider-row { padding: 16px 0; }
+    .api-connections .provider-title strong { font-size: 12px; }
+    .api-connections .key-input-row input { font-size: 11px; }
+    .api-connections .security-note { margin: 5px 0 15px; font-size: 10px; }
+    .dashboard-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 27px 0 34px; background: #fff; border: 1px solid var(--line); border-radius: 7px; }
+    .dashboard-stat { min-width: 0; padding: 17px 18px; border-right: 1px solid var(--line); }
+    .dashboard-stat:nth-child(3n) { border-right: 0; }
+    .dashboard-stat:nth-child(-n+3) { border-bottom: 1px solid var(--line); }
+    .dashboard-stat span { display: block; color: var(--muted); font-size: 10px; }
+    .dashboard-stat strong { display: block; margin-top: 8px; font-family: Manrope, sans-serif; font-size: 23px; font-weight: 700; }
+    .dashboard-section { margin-top: 26px; }
+    .dashboard-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+    .dashboard-section-head h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 14px; letter-spacing: 0; }
+    .activity-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+    .activity-table th, .activity-table td { padding: 11px 13px; border-bottom: 1px solid #eef0eb; text-align: left; font-size: 10px; }
+    .activity-table th { color: #7b857d; background: #fafbf9; font-size: 9px; font-weight: 600; }
+    .activity-table td:first-child { max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .activity-table tr:last-child td { border-bottom: 0; }
+    .dashboard-empty { padding: 28px 15px; color: var(--muted); text-align: center; font-size: 11px; }
+    .provider-search { width: min(390px, 100%); height: 35px; margin-top: 22px; padding: 0 11px; color: var(--ink); background: #fff; border: 1px solid #dfe5dd; border-radius: 6px; outline: 0; font-size: 11px; }
+    .provider-search:focus { border-color: #85b59a; box-shadow: 0 0 0 3px #e8f4ec; }
+    .custom-config { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .custom-config input { min-width: 0; padding: 8px 9px; background: #fafbf9; border: 1px solid #e4e9e2; border-radius: 6px; font-size: 10px; }
+    .heading-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+    .eyebrow { display: flex; align-items: center; gap: 7px; margin-bottom: 11px; color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+    .eyebrow span { width: 7px; height: 7px; background: var(--coral); border-radius: 50%; }
+    h1 { margin: 0; font-family: Manrope, sans-serif; font-size: clamp(24px, 3vw, 33px); font-weight: 700; letter-spacing: 0; line-height: 1.2; }
+    .subheading { margin: 9px 0 0; color: var(--muted); font-size: 12px; }
+    .heading-actions { display: flex; align-items: center; gap: 7px; padding-top: 19px; }
+    .quiet-button { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; color: #66716a; background: transparent; border: 1px solid #e1e5de; border-radius: 6px; cursor: pointer; font-size: 10px; }
+    .quiet-button:hover { background: #fff; }
+    .quiet-button svg { width: 13px; height: 13px; }
+    .prompt-card { margin-top: 25px; padding: 15px 17px; background: #fff; border: 1px solid #e9ece6; border-left: 3px solid var(--coral); border-radius: 8px; box-shadow: 0 5px 16px rgba(34, 49, 40, .025); }
+    .prompt-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; color: #8a928c; font-size: 10px; }
+    .prompt-meta .profile-avatar { width: 21px; height: 21px; font-size: 8px; }
+    .prompt-meta strong { color: #4a544d; font-weight: 600; }
+    .prompt-copy { margin: 0; font-size: 13px; line-height: 1.6; }
+    .answer-toolbar { display: flex; align-items: center; justify-content: space-between; margin: 27px 0 12px; }
+    .answer-title { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 700; }
+    .answer-title svg { width: 15px; height: 15px; color: var(--green); }
+    .answer-count { color: #929a94; font-size: 10px; font-weight: 500; }
+    .add-model { display: inline-flex; align-items: center; gap: 5px; padding: 5px 7px; color: var(--green); background: transparent; border: 0; cursor: pointer; font-size: 10px; font-weight: 700; }
+    .add-model svg { width: 13px; height: 13px; }
+    .model-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+    .model-card { display: flex; flex-direction: column; min-width: 0; min-height: 238px; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .model-head { display: flex; align-items: center; gap: 9px; min-height: 55px; padding: 10px 12px; border-bottom: 1px solid #eef0eb; }
+    .provider-mark { display: grid; place-items: center; flex: 0 0 28px; height: 28px; color: #45554a; background: #eef4ed; border-radius: 7px; font-family: Manrope, sans-serif; font-size: 12px; font-weight: 800; }
+    .provider-mark.anthropic { color: #9b5535; background: #fff1e8; }
+    .provider-mark.gemini { color: #537478; background: #edf5f2; }
+    .provider-mark.groq { color: #a64e20; background: #fff0e5; }
+    .provider-mark.xai { color: #fff; background: #272b28; }
+    .model-heading { min-width: 0; flex: 1; }
+    .model-heading strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 700; }
+    .model-heading span { display: block; margin-top: 3px; color: #929a94; font-size: 9px; }
+    .model-select, .model-custom { width: 140px; min-width: 85px; height: 27px; padding: 0 6px; color: #6b756d; background: #fff; border: 1px solid var(--line); border-radius: 5px; font-size: 9px; }
+    .model-terms-link { margin-top: 5px; color: #16764f; font-size: 9px; font-weight: 600; }
+    .model-body { display: flex; flex: 1; flex-direction: column; min-height: 180px; padding: 15px 13px; }
+    .empty-state { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; color: #929a94; text-align: center; }
+    .empty-orbit { display: grid; place-items: center; width: 37px; height: 37px; margin-bottom: 12px; color: var(--green); background: #edf5ed; border-radius: 50%; }
+    .empty-orbit svg { width: 17px; height: 17px; }
+    .empty-state strong { color: #4b554e; font-size: 10px; font-weight: 600; }
+    .empty-state span { max-width: 160px; margin-top: 5px; font-size: 9px; line-height: 1.5; }
+    .empty-state button { margin-top: 11px; padding: 6px 9px; color: var(--green); background: #fff; border: 1px solid #dfe7df; border-radius: 5px; cursor: pointer; font-size: 9px; font-weight: 700; }
+    .response { margin: 0; color: #4e5851; font-size: 11px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .response-error { color: #a33e32; }
+    .response-status { display: flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 14px; color: #8e9790; font-size: 9px; }
+    .status-dot { width: 6px; height: 6px; background: #69a87c; border-radius: 50%; }
+    .status-dot.loading { background: #dfa735; animation: pulse 1s ease-in-out infinite alternate; }
+    @keyframes pulse { to { opacity: .35; } }
+    .composer-wrap { position: sticky; bottom: 0; z-index: 2; margin-top: auto; padding: 22px 35px 24px; background: linear-gradient(180deg, rgba(246,247,243,0), var(--paper) 22%); }
+    .composer { width: min(1170px, 100%); margin: 0 auto; padding: 10px 11px 9px 15px; background: #fff; border: 1px solid #dfe5dd; border-radius: 10px; box-shadow: 0 8px 27px rgba(34, 49, 40, .07); }
+    .composer textarea { display: block; width: 100%; min-height: 35px; max-height: 130px; padding: 5px 2px; resize: vertical; color: var(--ink); background: transparent; border: 0; outline: 0; font-size: 12px; line-height: 1.5; }
+    .composer textarea::placeholder { color: #9ca39e; }
+    .composer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 5px; }
+    .composer-tools { display: flex; align-items: center; gap: 7px; }
+    .target-label { display: inline-flex; align-items: center; gap: 6px; color: #858e87; font-size: 9px; }
+    .target-label svg { width: 13px; height: 13px; color: var(--green); }
+    .target-count { color: #4e5b52; font-weight: 700; }
+    .send-button { display: inline-flex; align-items: center; gap: 7px; min-width: 77px; justify-content: center; padding: 8px 11px; color: #fff; background: var(--green); border: 0; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: 700; }
+    .send-button:disabled { opacity: .55; cursor: not-allowed; }
+    .send-button svg { width: 13px; height: 13px; }
+    .footnote { width: min(1170px, 100%); margin: 8px auto 0; color: #9aa19b; text-align: center; font-size: 9px; }
+    dialog { width: min(510px, calc(100vw - 28px)); max-height: min(85vh, 700px); padding: 0; overflow: auto; color: var(--ink); background: #fff; border: 1px solid #e3e8e1; border-radius: 12px; box-shadow: 0 24px 80px rgba(23, 38, 29, .2); }
+    dialog::backdrop { background: rgba(23, 33, 27, .38); backdrop-filter: blur(2px); }
+    .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 21px 22px 15px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 17px; letter-spacing: 0; }
+    .dialog-head p { margin: 5px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .dialog-body { padding: 7px 22px 19px; }
+    .provider-row { padding: 13px 0; border-bottom: 1px solid #eef0eb; }
+    .provider-row:last-of-type { border-bottom: 0; }
+    .provider-title { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+    .provider-title .provider-mark { width: 25px; height: 25px; flex-basis: 25px; font-size: 10px; }
+    .provider-title strong { flex: 1; font-size: 11px; }
+    .key-state { color: #89928b; font-size: 9px; }
+    .key-input-row { display: flex; gap: 7px; }
+    .key-input-row input { min-width: 0; flex: 1; padding: 8px 9px; color: #364039; background: #fafbf9; border: 1px solid #e4e9e2; border-radius: 6px; outline: 0; font-size: 10px; }
+    .key-input-row input:focus { border-color: #85b59a; box-shadow: 0 0 0 3px #e8f4ec; }
+    .key-input-row button { padding: 0 10px; color: #fff; background: #34493b; border: 0; border-radius: 6px; cursor: pointer; font-size: 9px; font-weight: 700; }
+    .key-actions { display: flex; align-items: center; gap: 9px; margin-top: 7px; }
+    .key-actions button { padding: 0; color: #8b5349; background: transparent; border: 0; cursor: pointer; font-size: 9px; }
+    .key-actions span { color: #7d8b7f; font-size: 9px; }
+    .security-note { display: flex; gap: 9px; margin-top: 6px; padding: 11px; color: #647068; background: #f5f8f4; border-radius: 7px; font-size: 9px; line-height: 1.55; }
+    .security-note svg { flex: 0 0 14px; width: 14px; height: 14px; color: var(--green); }
+    .dialog-footer { display: flex; justify-content: flex-end; padding: 12px 22px 17px; border-top: 1px solid var(--line); }
+    .close-button { padding: 8px 13px; color: #fff; background: var(--green); border: 0; border-radius: 6px; cursor: pointer; font-size: 10px; font-weight: 700; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 5; max-width: min(340px, calc(100vw - 44px)); padding: 11px 14px; color: #fff; background: #28382e; border-radius: 7px; box-shadow: var(--shadow); font-size: 11px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: .18s ease; }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+    .auth-screen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 480px); min-height: 100vh; background: #f3f3ee; }
+    .auth-aside { display: flex; flex-direction: column; justify-content: space-between; min-height: 100vh; padding: 38px 44px; color: #f3f4ef; background: #222724; }
+    .auth-aside .brand { padding: 0; }
+    .auth-aside-copy { max-width: 500px; margin: auto 0; }
+    .auth-aside-copy span { color: #9fb6a5; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .auth-aside-copy h1 { margin-top: 15px; color: #f3f4ef; font-size: 42px; line-height: 1.12; }
+    .auth-aside-copy p { max-width: 390px; margin-top: 15px; color: #acb6af; font-size: 13px; line-height: 1.7; }
+    .auth-aside-foot { color: #87918a; font-size: 10px; }
+    .auth-panel { display: flex; align-items: center; justify-content: center; padding: 35px; }
+    .auth-form-wrap { width: min(100%, 350px); }
+    .auth-form-wrap h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 23px; letter-spacing: 0; }
+    .auth-form-wrap > p { margin: 8px 0 23px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .auth-form { display: grid; gap: 13px; }
+    .auth-field { display: grid; gap: 6px; color: #526057; font-size: 10px; font-weight: 600; }
+    .auth-field input { width: 100%; height: 39px; padding: 0 11px; color: var(--ink); background: #fff; border: 1px solid #dfe4dc; border-radius: 6px; outline: 0; font-size: 11px; }
+    .auth-field input:focus { border-color: #79a98b; box-shadow: 0 0 0 3px #e5f0e7; }
+    .auth-submit { height: 39px; margin-top: 5px; color: #fff; background: #24784f; border: 0; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .auth-submit:disabled { opacity: .6; cursor: wait; }
+    .auth-switch { margin-top: 18px; color: #7a837c; text-align: center; font-size: 10px; }
+    .auth-switch button { padding: 0; color: #176f49; background: transparent; border: 0; cursor: pointer; font-size: inherit; font-weight: 700; }
+    .auth-error { margin-top: 13px; padding: 10px 11px; color: #973f34; background: #fff0ec; border: 1px solid #f5d6cd; border-radius: 6px; font-size: 10px; line-height: 1.5; }
+    .account-label { max-width: 220px; overflow: hidden; color: #66716a; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+    .logout-button { padding: 7px 9px; color: #5e6961; background: #fff; border: 1px solid #e1e5de; border-radius: 6px; cursor: pointer; font-size: 10px; }
+    .conversation-list { display: grid; gap: 2px; margin-top: 4px; }
+    .conversation-list .side-link { min-height: 31px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+    .conversation-new { margin-top: 6px; color: #a7b3aa; font-size: 10px; }
+    .provider-config { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+    .provider-field { display: grid; gap: 5px; color: #647068; font-size: 9px; font-weight: 600; }
+    .provider-field.wide { grid-column: 1 / -1; }
+    .provider-field input, .provider-field textarea { min-width: 0; width: 100%; padding: 8px 9px; color: #364039; background: #fafbf9; border: 1px solid #e4e9e2; border-radius: 6px; outline: 0; font: inherit; font-size: 10px; font-weight: 400; }
+    .provider-field textarea { min-height: 78px; resize: vertical; font-family: monospace; }
+    .provider-actions { display: flex; align-items: center; gap: 7px; }
+    .provider-actions button { min-height: 29px; padding: 0 10px; color: #fff; background: #34493b; border: 0; border-radius: 5px; cursor: pointer; font-size: 9px; font-weight: 700; }
+    .provider-actions .test-provider { color: #536158; background: #f1f4ef; border: 1px solid #e2e8e0; }
+    .provider-actions .disconnect-provider { margin-left: auto; color: #8b5349; background: transparent; border: 0; }
+    .provider-help { margin: 0 0 8px; color: #88928a; font-size: 9px; }
+    .model-list-error { color: #a44c3d !important; }
+    .response-meta { margin-top: 9px; color: #89928b; font-size: 9px; }
+    .response-error { overflow-wrap: anywhere; }
+    @media (max-width: 940px) {
+      .app { grid-template-columns: 215px minmax(0, 1fr); }
+      .content { padding-right: 23px; padding-left: 23px; }
+      .topbar { padding-right: 23px; padding-left: 23px; }
+      .composer-wrap { padding-right: 23px; padding-left: 23px; }
+      .model-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .model-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+      .dashboard-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dashboard-stat:nth-child(2n) { border-right: 0; }
+      .dashboard-stat:nth-child(-n+4) { border-bottom: 1px solid var(--line); }
+    }
+    @media (max-width: 650px) {
+      .app { display: block; }
+      .sidebar { display: flex; min-height: 0; padding: 9px 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .brand, .sidebar > .section-label { display: none; }
+      #chatNav, #apiNav { flex: 1; justify-content: center; min-height: 34px; }
+      .main { min-height: 100vh; }
+      .topbar { height: 54px; padding: 0 15px; }
+      .breadcrumb { font-size: 10px; }
+      .top-actions { gap: 7px; }
+      .connection-summary { display: none; }
+      .connect-button { padding: 8px; font-size: 0; }
+      .connect-button svg { width: 16px; height: 16px; }
+      .content { padding: 28px 15px 15px; }
+      .heading-row { display: block; }
+      h1 { font-size: 25px; }
+      .heading-actions { padding-top: 14px; }
+      .prompt-card { margin-top: 18px; padding: 13px; }
+      .prompt-copy { font-size: 12px; }
+      .model-grid { grid-template-columns: 1fr; gap: 9px; }
+      .model-card:last-child:nth-child(odd) { grid-column: auto; }
+      .model-card { min-height: 208px; }
+      .model-select, .model-custom { width: min(145px, 34vw); }
+      .model-body { min-height: 150px; }
+      .empty-state { min-height: 120px; }
+      .composer-wrap { position: sticky; padding: 14px 12px 15px; }
+      .composer { padding-left: 12px; }
+      .footnote { font-size: 8px; }
+      .answer-toolbar { margin-top: 21px; }
+      .dashboard-stats { margin: 20px 0 26px; }
+      .dashboard-stat { padding: 13px; }
+      .dashboard-stat strong { font-size: 20px; }
+      .activity-table th, .activity-table td { padding: 9px 8px; font-size: 9px; }
+      .activity-table th:nth-child(3), .activity-table td:nth-child(3) { display: none; }
+      .custom-config { grid-template-columns: 1fr; }
+      .auth-screen { grid-template-columns: 1fr; }
+      .auth-aside { display: none; }
+      .auth-panel { min-height: 100vh; padding: 22px; }
+      .provider-config { grid-template-columns: 1fr; }
+      .provider-field.wide { grid-column: auto; }
+      .account-label { max-width: 100px; }
+    }
+    :root {
+      --paper: #f7f7f4;
+      --white: #fff;
+      --ink: #242823;
+      --muted: #737a73;
+      --line: #e5e7e1;
+      --green: #2e7051;
+      --green-soft: #e9f2eb;
+      --coral: #d17758;
+      --shadow: 0 2px 8px rgba(31, 39, 33, .035), 0 12px 30px rgba(31, 39, 33, .035);
+    }
+    body { background: var(--paper); }
+    .app { grid-template-columns: 258px minmax(0, 1fr); }
+    .sidebar { padding: 22px 14px 16px; background: #232723; border-color: #343a34; }
+    .brand { gap: 11px; padding: 0 10px; font-size: 16px; }
+    .brand-mark { width: 30px; height: 30px; background: #3d7556; border-radius: 8px; }
+    .section-label { margin: 31px 10px 10px; color: #929b93; font-size: 10px; letter-spacing: .5px; }
+    .side-link { min-height: 39px; padding: 0 11px; border-radius: 7px; color: #c4cbc4; font-size: 13px; }
+    .side-link svg { width: 16px; height: 16px; }
+    .side-link:hover { background: #2d342e; }
+    .side-link.active { color: #fff; background: #374139; }
+    .side-link.active svg { color: #a4d3ae; }
+    .conversation-list { gap: 3px; margin-top: 2px; }
+    .conversation-list .side-link { min-height: 35px; font-size: 12px; }
+    .conversation-new { margin-top: 8px; color: #b6c4b8; font-size: 12px; }
+    .main { background: var(--paper); }
+    .topbar { height: 64px; padding: 0 42px; background: rgba(255,255,255,.82); border-color: var(--line); }
+    .breadcrumb { gap: 10px; font-size: 12px; }
+    .breadcrumb strong { color: var(--ink); }
+    .top-actions { gap: 13px; }
+    .connection-summary { font-size: 12px; }
+    .account-label { font-size: 12px; }
+    .logout-button { padding: 8px 11px; font-size: 12px; }
+    .connect-button { padding: 9px 13px; border-radius: 7px; font-size: 12px; }
+    .content { width: min(1320px, 100%); padding: 44px 42px 38px; animation: enter-view .24s ease-out both; }
+    @keyframes enter-view { from { opacity: .65; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .heading-row { align-items: center; }
+    .eyebrow { gap: 8px; margin-bottom: 12px; color: var(--green); font-size: 11px; letter-spacing: .45px; }
+    .eyebrow span { width: 8px; height: 8px; background: var(--coral); }
+    h1 { font-size: 30px; line-height: 1.18; }
+    .subheading { margin-top: 9px; font-size: 14px; line-height: 1.55; }
+    .heading-actions { gap: 8px; padding-top: 12px; }
+    .quiet-button { height: 36px; padding: 0 12px; border-color: #dfe3dc; border-radius: 7px; font-size: 12px; }
+    .quiet-button svg { width: 15px; height: 15px; }
+    .dashboard-stats { margin: 34px 0 42px; background: #fff; border-color: var(--line); border-radius: 9px; box-shadow: var(--shadow); }
+    .dashboard-stat { padding: 20px 21px; }
+    .dashboard-stat span { font-size: 12px; }
+    .dashboard-stat strong { margin-top: 9px; font-size: 25px; }
+    .stat-subtitle { display: block; margin-top: 5px; color: #899089; font-size: 11px; }
+    .dashboard-section { margin-top: 30px; }
+    .dashboard-section-head { margin-bottom: 14px; }
+    .dashboard-section-head h2 { font-size: 17px; }
+    .activity-table { border-color: var(--line); border-radius: 9px; box-shadow: var(--shadow); }
+    .activity-table th, .activity-table td { padding: 14px 16px; font-size: 12px; }
+    .activity-table th { background: #fafbf9; font-size: 11px; }
+    .dashboard-empty { padding: 34px 18px; font-size: 13px; }
+    .provider-search { width: min(480px, 100%); height: 42px; margin-top: 27px; padding: 0 13px; border-color: #dfe3dc; border-radius: 8px; font-size: 13px; }
+    .api-connections { max-width: 900px; margin-top: 18px; padding: 0 22px; border-radius: 9px; box-shadow: var(--shadow); }
+    .api-connections .provider-row { padding: 20px 0; }
+    .api-connections .provider-title strong { font-size: 14px; }
+    .api-connections .key-input-row input { padding: 10px 12px; font-size: 12px; }
+    .api-connections .security-note { margin: 8px 0 18px; padding: 12px 14px; font-size: 11px; }
+    .provider-title { gap: 10px; margin-bottom: 11px; }
+    .provider-title strong { font-size: 13px; }
+    .provider-title .provider-mark { width: 29px; height: 29px; flex-basis: 29px; font-size: 12px; }
+    .key-state, .provider-help { font-size: 11px; }
+    .provider-config { gap: 10px; margin-bottom: 10px; }
+    .provider-field { gap: 6px; font-size: 11px; }
+    .provider-field input, .provider-field textarea { padding: 10px 11px; border-radius: 7px; font-size: 12px; }
+    .provider-field textarea { min-height: 92px; }
+    .provider-actions { gap: 8px; }
+    .provider-actions button { min-height: 34px; padding: 0 12px; border-radius: 6px; font-size: 11px; }
+    .provider-help { margin-bottom: 11px; }
+    .prompt-card { margin-top: 30px; padding: 18px 20px; background: #fff; border: 1px solid var(--line); border-left: 3px solid #d6a17f; border-radius: 9px; box-shadow: var(--shadow); }
+    .prompt-meta { gap: 9px; margin-bottom: 9px; font-size: 11px; }
+    .prompt-meta strong { color: #38413a; }
+    .prompt-copy { font-size: 14px; line-height: 1.65; }
+    .answer-toolbar { margin: 30px 0 15px; }
+    .answer-title { gap: 9px; font-size: 15px; }
+    .answer-title svg { width: 17px; height: 17px; }
+    .answer-count { font-size: 12px; }
+    .add-model { gap: 6px; padding: 7px 9px; border-radius: 6px; font-size: 12px; }
+    .add-model:hover { background: var(--green-soft); }
+    .model-grid { gap: 15px; }
+    .model-card { min-height: 290px; border-color: var(--line); border-radius: 9px; box-shadow: var(--shadow); transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease; }
+    .model-card:hover { border-color: #d4dbd3; box-shadow: 0 4px 12px rgba(31,39,33,.05), 0 16px 34px rgba(31,39,33,.045); transform: translateY(-1px); }
+    .model-head { gap: 10px; min-height: 66px; padding: 12px 14px; }
+    .provider-mark { flex-basis: 32px; height: 32px; border-radius: 8px; font-size: 13px; }
+    .model-heading strong { font-size: 12px; }
+    .model-heading span { margin-top: 4px; font-size: 10px; }
+    .model-select, .model-custom { width: 150px; height: 32px; padding: 0 8px; border-color: #e1e5de; border-radius: 6px; font-size: 10px; }
+    .model-body { min-height: 220px; padding: 18px 16px; }
+    .empty-state { min-height: 180px; }
+    .empty-orbit { width: 42px; height: 42px; margin-bottom: 13px; color: #447a59; background: #edf4ed; }
+    .empty-orbit svg { width: 19px; height: 19px; }
+    .empty-state strong { color: #3e4740; font-size: 12px; }
+    .empty-state span { max-width: 210px; margin-top: 6px; font-size: 11px; line-height: 1.55; }
+    .empty-state button { margin-top: 13px; padding: 8px 11px; border-color: #dce5dc; border-radius: 6px; font-size: 11px; }
+    .response { color: #353c36; font-size: 13px; line-height: 1.75; }
+    .response-status, .response-meta { font-size: 10px; }
+    .response-status { padding-top: 18px; }
+    .composer-wrap { padding: 24px 42px 23px; background: linear-gradient(180deg, rgba(247,247,244,0), var(--paper) 24%); }
+    .composer { padding: 13px 13px 11px 17px; border-color: #dce1da; border-radius: 11px; box-shadow: 0 8px 28px rgba(35,42,36,.075); }
+    .composer textarea { min-height: 42px; padding: 6px 3px; font-size: 14px; line-height: 1.55; }
+    .composer textarea::placeholder { color: #929990; }
+    .composer-bottom { padding-top: 8px; }
+    .target-label { gap: 7px; font-size: 11px; }
+    .target-label svg { width: 15px; height: 15px; }
+    .send-button { min-width: 88px; padding: 10px 13px; border-radius: 7px; font-size: 12px; }
+    .footnote { margin-top: 9px; font-size: 10px; }
+    .auth-screen { background: #f7f7f4; }
+    .auth-aside { padding: 35px 48px; background: #232723; }
+    .auth-aside-copy { max-width: 480px; }
+    .auth-aside-copy span { color: #a7c7ad; font-size: 11px; letter-spacing: .35px; }
+    .auth-aside-copy h1 { font-size: 40px; line-height: 1.15; }
+    .auth-aside-copy p { margin-top: 17px; font-size: 14px; line-height: 1.7; }
+    .auth-aside-foot { font-size: 11px; }
+    .auth-form-wrap h2 { font-size: 26px; }
+    .auth-form-wrap > p { margin: 9px 0 25px; font-size: 13px; }
+    .auth-form { gap: 15px; }
+    .auth-field { gap: 7px; font-size: 12px; }
+    .auth-field input { height: 43px; padding: 0 12px; border-radius: 7px; font-size: 13px; }
+    .auth-submit { height: 43px; border-radius: 7px; font-size: 13px; }
+    .auth-switch { margin-top: 20px; font-size: 12px; }
+    .auth-error { font-size: 12px; }
+    .toast { right: 24px; bottom: 24px; max-width: min(380px, calc(100vw - 40px)); padding: 13px 16px; border-radius: 8px; font-size: 13px; }
+    @media (max-width: 940px) {
+      .app { grid-template-columns: 224px minmax(0, 1fr); }
+      .content { padding-right: 28px; padding-left: 28px; }
+      .topbar { padding-right: 28px; padding-left: 28px; }
+      .composer-wrap { padding-right: 28px; padding-left: 28px; }
+      .model-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 650px) {
+      .sidebar { flex-direction: row; align-items: center; gap: 5px; padding: 8px 10px; background: #232723; border-bottom-color: #343a34; }
+      #chatNav, #apiNav, #dashboardNav { flex: 1; justify-content: center; min-height: 38px; font-size: 12px; }
+      .conversation-list { display: none; }
+      .conversation-new { flex: 0 0 auto !important; min-height: 38px; margin: 0; padding: 0 9px; font-size: 11px; }
+      .topbar { height: 56px; padding: 0 15px; }
+      .top-actions { gap: 8px; }
+      .account-label { display: none; }
+      .logout-button { padding: 7px 9px; font-size: 11px; }
+      .connect-button { padding: 8px; }
+      .content { padding: 28px 16px 18px; }
+      .heading-row { display: block; }
+      h1 { font-size: 27px; }
+      .subheading { font-size: 13px; }
+      .heading-actions { padding-top: 15px; }
+      .dashboard-stats { margin: 24px 0 32px; }
+      .dashboard-stat { padding: 14px; }
+      .dashboard-stat span { font-size: 11px; }
+      .dashboard-stat strong { font-size: 22px; }
+      .activity-table th, .activity-table td { padding: 11px 9px; font-size: 10px; }
+      .activity-table th:nth-child(3), .activity-table td:nth-child(3) { display: none; }
+      .api-connections { padding: 0 14px; }
+      .prompt-card { margin-top: 21px; padding: 15px; }
+      .prompt-copy { font-size: 13px; }
+      .model-grid { grid-template-columns: minmax(0, 1fr); gap: 11px; }
+      .model-card:last-child:nth-child(odd) { grid-column: auto; }
+      .model-card { min-height: 245px; }
+      .model-body { min-height: 175px; }
+      .empty-state { min-height: 145px; }
+      .model-select, .model-custom { width: min(150px, 34vw); }
+      .composer-wrap { padding: 14px 12px 13px; }
+      .composer { padding: 10px 10px 9px 13px; }
+      .composer textarea { min-height: 38px; font-size: 13px; }
+      .footnote { font-size: 9px; }
+      .auth-panel { padding: 24px; }
+    }
+    .composer { position: relative; }
+    .composer-tools { gap: 12px; }
+    .model-picker { position: relative; }
+    .model-picker > summary { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 10px; color: #38413a; background: #f7f8f6; border: 1px solid #e3e7e0; border-radius: 7px; cursor: pointer; list-style: none; font-size: 12px; font-weight: 600; }
+    .model-picker > summary::-webkit-details-marker { display: none; }
+    .model-picker > summary:hover, .model-picker[open] > summary { background: #f0f3ef; border-color: #d7ded6; }
+    .model-picker > summary:focus-visible, .model-picker-menu button:focus-visible, .picker-field select:focus-visible, .picker-lane-actions button:focus-visible { outline: 2px solid #75a487; outline-offset: 2px; }
+    .model-picker > summary > svg:first-child { width: 15px; height: 15px; color: var(--green); }
+    .model-picker-count { display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; color: #4a6651; background: #e8efe8; border-radius: 5px; font-size: 10px; }
+    .model-picker > summary .picker-chevron { width: 13px; height: 13px; margin-left: 1px; color: #858d85; transition: transform .16s ease; }
+    .model-picker[open] > summary .picker-chevron { transform: rotate(180deg); }
+    .model-picker-menu { position: absolute; bottom: calc(100% + 12px); left: 0; z-index: 4; width: min(440px, calc(100vw - 40px)); max-height: min(62vh, 500px); padding: 8px 15px 13px; overflow: auto; background: #fff; border: 1px solid #e2e6df; border-radius: 10px; box-shadow: 0 14px 40px rgba(31, 39, 33, .16); }
+    .model-picker-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; border-bottom: 1px solid #edf0eb; }
+    .model-picker-head strong { color: #333a34; font-size: 13px; font-weight: 650; }
+    .model-picker-head .add-model { flex: 0 0 auto; }
+    .picker-lane { display: grid; grid-template-columns: minmax(82px, .8fr) minmax(96px, 1.15fr) auto; align-items: end; gap: 9px; padding: 12px 0; border-bottom: 1px solid #edf0eb; }
+    .picker-lane:last-child { border-bottom: 0; }
+    .picker-field { display: grid; min-width: 0; gap: 5px; color: #7b837c; font-size: 10px; font-weight: 600; }
+    .picker-field select { width: 100%; min-width: 0; height: 35px; padding: 0 8px; color: #374139; background: #fbfcfa; border: 1px solid #e1e6df; border-radius: 6px; outline: 0; font-size: 11px; }
+    .picker-lane-actions { display: flex; align-items: center; gap: 2px; min-height: 35px; }
+    .picker-lane-actions .icon-button { width: 30px; height: 30px; }
+    .picker-lane .model-custom { grid-column: 1 / 3; width: 100%; min-width: 0; height: 34px; padding: 0 9px; border-radius: 6px; font-size: 11px; }
+    .lane-status { flex: 0 0 auto; padding: 5px 7px; color: #727a73; background: #f1f2ef; border-radius: 5px; font-size: 10px; }
+    .lane-status.connected { color: #35654a; background: #eaf3ec; }
+    .model-card .model-head { align-items: center; }
+    .model-card .model-heading { flex: 1; }
+    .target-label { white-space: nowrap; }
+    @media (max-width: 650px) {
+      .composer-tools { flex-wrap: wrap; gap: 8px; }
+      .model-picker > summary { min-height: 34px; padding: 0 8px; font-size: 11px; }
+      .model-picker-menu { left: -1px; width: min(440px, calc(100vw - 28px)); padding-right: 12px; padding-left: 12px; }
+      .picker-lane { gap: 6px; }
+      .picker-field select { padding: 0 5px; font-size: 10px; }
+      .picker-lane-actions .icon-button { width: 27px; }
+      .lane-status { font-size: 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <section class="auth-screen" id="authView">
+    <div class="auth-aside">
+      <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h8a4 4 0 0 1 4 4v6"/><path d="m13 14 4 4 4-4"/><path d="M19 17h-8a4 4 0 0 1-4-4V7"/><path d="m11 10-4-4-4 4"/></svg></span>Model Desk</div>
+      <div class="auth-aside-copy"><span>AI workspace</span><h1>One place for every model.</h1><p>Connect your providers, compare responses, and keep conversations in a private workspace.</p></div>
+      <div class="auth-aside-foot">Private by design. Provider credentials are encrypted at rest.</div>
+    </div>
+    <div class="auth-panel"><div class="auth-form-wrap"><h2 id="authTitle">Create your workspace</h2><p id="authDescription">Sign up to connect providers and save model conversations.</p>
+      <form class="auth-form" id="authForm"><label class="auth-field">Email<input id="authEmail" name="email" type="email" autocomplete="email" required maxlength="254"></label><label class="auth-field">Password<input id="authPassword" name="password" type="password" autocomplete="new-password" minlength="12" required maxlength="200"></label><button class="auth-submit" id="authSubmit" type="submit">Create account</button></form>
+      <div class="auth-error" id="authError" role="alert" hidden></div><div class="auth-switch"><span id="authSwitchCopy">Already have an account?</span> <button id="authSwitch" type="button">Sign in</button></div>
+    </div></div>
+  </section>
+  <div class="app" id="appRoot" hidden>
+    <aside class="sidebar" aria-label="Workspace navigation">
+      <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h8a4 4 0 0 1 4 4v6"/><path d="m13 14 4 4 4-4"/><path d="M19 17h-8a4 4 0 0 1-4-4V7"/><path d="m11 10-4-4-4 4"/></svg></span>Model Desk</div>
+      <div class="section-label">Workspace</div>
+      <button class="side-link active" id="dashboardNav" type="button" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="13" y="10" width="8" height="11" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/></svg>Dashboard</button>
+      <button class="side-link" id="chatNav" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8Z"/></svg>Chat</button>
+      <button class="side-link" id="apiNav" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="15" r="5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3M18 5l3 3"/></svg>API<span class="side-count" id="connectedCount">0</span></button>
+      <div class="section-label">Conversations</div>
+      <nav class="conversation-list" id="conversationList" aria-label="Saved conversations"></nav>
+      <button class="side-link conversation-new" id="newConversation" type="button"><span aria-hidden="true">+</span>New conversation</button>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Model Desk</span><span class="crumb-dot"></span><strong id="pageTitle">Dashboard</strong></div>
+        <div class="top-actions">
+          <span class="account-label" id="accountLabel"></span>
+          <button class="logout-button" id="logoutButton" type="button">Sign out</button>
+          <span class="connection-summary" id="connectionSummary">0 providers connected</span>
+          <button class="connect-button" id="openKeys" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Connect provider</button>
+        </div>
+      </header>
+      <section class="content" id="dashboardView">
+        <div class="heading-row"><div><div class="eyebrow"><span></span>Workspace overview</div><h1>Dashboard</h1><p class="subheading">A live view of model connections and recent activity.</p></div><div class="heading-actions"><button class="quiet-button" id="dashboardChat" type="button">Open chat</button></div></div>
+        <div class="dashboard-stats">
+          <div class="dashboard-stat"><span>Connected providers</span><strong id="statConnected">0</strong></div>
+          <div class="dashboard-stat"><span>Saved conversations</span><strong id="statConversations">0</strong></div>
+          <div class="dashboard-stat"><span>Prompts sent</span><strong id="statPrompts">0</strong></div>
+          <div class="dashboard-stat"><span>Responses received</span><strong id="statResponses">0</strong></div>
+          <div class="dashboard-stat"><span>Tokens used</span><strong id="statTokens">0</strong><small class="stat-subtitle" id="tokenBreakdown">0 in · 0 out</small></div>
+          <div class="dashboard-stat"><span>Average response time</span><strong id="statLatency">0 ms</strong></div>
+        </div>
+        <section class="dashboard-section"><div class="dashboard-section-head"><h2>Recent activity</h2><span class="connection-summary">Saved to your workspace</span></div><div id="activityContent"></div></section>
+      </section>
+      <section class="content" id="chatView" hidden>
+        <div class="heading-row">
+          <div><div class="eyebrow"><span></span>Model workspace</div><h1>New comparison</h1><p class="subheading">Send one prompt to several models and compare their responses.</p></div>
+          <div class="heading-actions"><button class="quiet-button" id="newThread" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>New thread</button><button class="quiet-button" id="clearThread" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m4 4v6m6-6v6"/></svg>Clear</button></div>
+        </div>
+        <article class="prompt-card" aria-label="Current prompt">
+          <div class="prompt-meta"><strong>You</strong><span>·</span><span id="promptTime">Ready when you are</span></div>
+          <p class="prompt-copy" id="latestPrompt">Send a prompt to compare responses from the selected models.</p>
+        </article>
+        <div class="answer-toolbar"><div class="answer-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg>Responses <span class="answer-count" id="answerCount">· 4 models</span></div></div>
+        <div class="model-grid" id="modelGrid" aria-live="polite"></div>
+      </section>
+      <section class="content" id="apiView" hidden>
+        <div class="heading-row">
+          <div><div class="eyebrow"><span></span>Provider settings</div><h1>API connections</h1><p class="subheading">Credentials are encrypted by this workspace and never sent back to your browser.</p></div>
+        </div>
+        <input class="provider-search" id="providerSearch" type="search" placeholder="Filter providers…" aria-label="Filter API providers">
+        <div class="api-connections" id="apiProviderList"></div>
+      </section>
+      <div class="composer-wrap" id="chatComposer">
+        <form class="composer" id="chatForm">
+          <textarea id="promptInput" rows="1" aria-label="Write a prompt" placeholder="Ask anything. Your prompt goes to all selected models…"></textarea>
+          <div class="composer-bottom"><div class="composer-tools"><details class="model-picker" id="modelPicker"><summary aria-label="Choose models for this prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg><span>Models</span><span class="model-picker-count" id="composerModelCount">4</span><svg class="picker-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 10 5 5 5-5"/></svg></summary><div class="model-picker-menu"><div class="model-picker-head"><strong>Compare models</strong><button class="add-model" id="addModel" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add model</button></div><div class="model-picker-list" id="modelPickerList"></div></div></details><span class="target-label">Sending to <span class="target-count" id="targetCount">0 connected</span></span></div><button class="send-button" id="sendButton" type="submit">Send<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button></div>
+        </form>
+        <p class="footnote">Requests are routed through your workspace. Credentials are encrypted at rest.</p>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="application/json" id="prototype-script">
+    const providers = {
+      openai: { name: "OpenAI", mark: "O", placeholder: "sk-…", endpoint: "https://api.openai.com/v1/chat/completions", models: [{ id: "gpt-4.1", name: "GPT-4.1" }, { id: "gpt-4.1-mini", name: "GPT-4.1 mini" }, { id: "o4-mini", name: "o4-mini" }] },
+      anthropic: { name: "Anthropic (Claude)", mark: "A", markClass: "anthropic", protocol: "anthropic", placeholder: "sk-ant-…", models: [{ id: "claude-sonnet-4-20250514", name: "Claude Sonnet 4" }, { id: "claude-3-7-sonnet-20250219", name: "Claude 3.7 Sonnet" }, { id: "claude-3-5-haiku-20241022", name: "Claude 3.5 Haiku" }] },
+      groq: { name: "Groq", mark: "G", markClass: "groq", placeholder: "gsk_…", endpoint: "https://api.groq.com/openai/v1/chat/completions", models: [{ id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B" }, { id: "openai/gpt-oss-120b", name: "GPT-OSS 120B" }, { id: "meta-llama/llama-4-scout-17b-16e-instruct", name: "Llama 4 Scout" }] },
+      xai: { name: "xAI (Grok)", mark: "X", markClass: "xai", placeholder: "xai-…", endpoint: "https://api.x.ai/v1/chat/completions", models: [{ id: "grok-3", name: "Grok 3" }, { id: "grok-3-mini", name: "Grok 3 mini" }, { id: "grok-2-latest", name: "Grok 2" }] },
+      gemini: { name: "Google Gemini", mark: "G", markClass: "gemini", protocol: "gemini", placeholder: "AIza…", models: [{ id: "gemini-2.5-pro", name: "Gemini 2.5 Pro" }, { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" }, { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" }] },
+      mistral: { name: "Mistral AI", mark: "M", endpoint: "https://api.mistral.ai/v1/chat/completions", placeholder: "API key", models: [{ id: "mistral-large-latest", name: "Mistral Large" }, { id: "mistral-small-latest", name: "Mistral Small" }, { id: "codestral-latest", name: "Codestral" }] },
+      deepseek: { name: "DeepSeek", mark: "D", endpoint: "https://api.deepseek.com/chat/completions", placeholder: "sk-…", models: [{ id: "deepseek-chat", name: "DeepSeek Chat" }, { id: "deepseek-reasoner", name: "DeepSeek Reasoner" }] },
+      openrouter: { name: "OpenRouter", mark: "R", endpoint: "https://openrouter.ai/api/v1/chat/completions", placeholder: "sk-or-…", models: [{ id: "openai/gpt-4.1", name: "GPT-4.1" }, { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4" }, { id: "deepseek/deepseek-r1", name: "DeepSeek R1" }] },
+      together: { name: "Together AI", mark: "T", endpoint: "https://api.together.xyz/v1/chat/completions", placeholder: "API key", models: [{ id: "meta-llama/Llama-3.3-70B-Instruct-Turbo", name: "Llama 3.3 70B Turbo" }, { id: "Qwen/Qwen2.5-72B-Instruct-Turbo", name: "Qwen 2.5 72B" }] },
+      fireworks: { name: "Fireworks AI", mark: "F", endpoint: "https://api.fireworks.ai/inference/v1/chat/completions", placeholder: "fw_…", models: [{ id: "accounts/fireworks/models/llama-v3p3-70b-instruct", name: "Llama 3.3 70B" }, { id: "accounts/fireworks/models/qwen2p5-72b-instruct", name: "Qwen 2.5 72B" }] },
+      cerebras: { name: "Cerebras", mark: "C", endpoint: "https://api.cerebras.ai/v1/chat/completions", placeholder: "API key", models: [{ id: "llama-3.3-70b", name: "Llama 3.3 70B" }, { id: "qwen-3-32b", name: "Qwen 3 32B" }] },
+      perplexity: { name: "Perplexity", mark: "P", endpoint: "https://api.perplexity.ai/chat/completions", placeholder: "pplx-…", models: [{ id: "sonar-pro", name: "Sonar Pro" }, { id: "sonar", name: "Sonar" }] },
+      sambanova: { name: "SambaNova", mark: "S", endpoint: "https://api.sambanova.ai/v1/chat/completions", placeholder: "API key", models: [{ id: "DeepSeek-R1", name: "DeepSeek R1" }, { id: "Meta-Llama-3.3-70B-Instruct", name: "Llama 3.3 70B" }] },
+      nvidia: { name: "NVIDIA NIM", mark: "N", endpoint: "https://integrate.api.nvidia.com/v1/chat/completions", placeholder: "nvapi-…", models: [{ id: "meta/llama-3.3-70b-instruct", name: "Llama 3.3 70B" }, { id: "deepseek-ai/deepseek-r1", name: "DeepSeek R1" }] },
+      deepinfra: { name: "DeepInfra", mark: "I", endpoint: "https://api.deepinfra.com/v1/openai/chat/completions", placeholder: "API key", models: [{ id: "meta-llama/Meta-Llama-3.1-70B-Instruct", name: "Llama 3.1 70B" }, { id: "deepseek-ai/DeepSeek-R1", name: "DeepSeek R1" }] },
+      huggingface: { name: "Hugging Face", mark: "H", endpoint: "https://router.huggingface.co/v1/chat/completions", placeholder: "hf_…", models: [{ id: "meta-llama/Llama-3.3-70B-Instruct", name: "Llama 3.3 70B" }, { id: "Qwen/Qwen2.5-72B-Instruct", name: "Qwen 2.5 72B" }] },
+      cohere: { name: "Cohere", mark: "C", protocol: "cohere", placeholder: "API key", models: [{ id: "command-a-03-2025", name: "Command A" }, { id: "command-r-plus-08-2024", name: "Command R+" }] },
+      custom: { name: "Custom OpenAI-compatible", mark: "↗", protocol: "openai-compatible", placeholder: "Optional API key", models: [{ id: "", name: "Custom model" }] }
+    };
+    const lanes = [
+      { provider: "openai", model: "gpt-4.1", turns: [], loading: false, error: "" },
+      { provider: "anthropic", model: "claude-sonnet-4-20250514", turns: [], loading: false, error: "" },
+      { provider: "groq", model: "llama-3.3-70b-versatile", turns: [], loading: false, error: "" },
+      { provider: "xai", model: "grok-3", turns: [], loading: false, error: "" }
+    ];
+    const keys = Object.fromEntries(Object.keys(providers).map((provider) => [provider, ""]));
+    const customConfig = { endpoint: "", model: "" };
+    const activity = [];
+    let promptsSent = 0;
+    let responsesReceived = 0;
+    let currentView = "dashboard";
+    let activeRequests = 0;
+    let toastTimer;
+    const modelGrid = document.getElementById("modelGrid");
+    const keysDialog = document.getElementById("keysDialog");
+    const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+
+    function renderModels() {
+      modelGrid.innerHTML = lanes.map((lane, index) => {
+        const provider = providers[lane.provider];
+        const selectedModel = provider.models.find((model) => model.id === lane.model) || provider.models[0];
+        const content = lane.loading
+          ? `<div class="empty-state"><span class="empty-orbit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg></span><strong>Thinking…</strong><span>Waiting for ${escapeHtml(provider.name)}</span></div>`
+          : lane.error
+            ? `<div class="empty-state"><strong>Couldn't get a response</strong><span class="response-error">${escapeHtml(lane.error)}</span><button type="button" data-action="connect">Check connection</button></div>`
+            : lane.turns.length
+              ? `<p class="response">${escapeHtml(lane.turns[lane.turns.length - 1].content)}</p><div class="response-status"><span class="status-dot"></span>Response received</div>`
+              : `<div class="empty-state"><span class="empty-orbit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg></span><strong>${isProviderConnected(lane.provider) ? "Ready for your prompt" : "Connect " + escapeHtml(provider.name)}</strong><span>${isProviderConnected(lane.provider) ? "Send a prompt to start this conversation." : "Add connection details to use this model."}</span>${isProviderConnected(lane.provider) ? "" : "<button type=\"button\" data-action=\"connect\">Configure API</button>"}</div>`;
+        return `<article class="model-card" data-lane="${index}"><div class="model-head"><span class="provider-mark ${provider.markClass}">${provider.mark}</span><div class="model-heading"><strong>${escapeHtml(selectedModel.name)}</strong><span>${escapeHtml(provider.name)}</span></div><select class="model-select" aria-label="Choose ${escapeHtml(provider.name)} model" data-lane="${index}">${provider.models.map((model) => `<option value="${escapeHtml(model.id)}" ${model.id === lane.model ? "selected" : ""}>${escapeHtml(model.name)}</option>`).join("")}</select><button class="icon-button remove-lane" type="button" data-lane="${index}" aria-label="Remove ${escapeHtml(provider.name)} model" title="Remove model" ${lanes.length <= 1 ? "hidden" : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="model-body">${content}</div></article>`;
+      }).join("");
+      document.getElementById("targetCount").textContent = `${lanes.length} model${lanes.length === 1 ? "" : "s"}`;
+      document.getElementById("answerCount").textContent = `· ${lanes.length} model${lanes.length === 1 ? "" : "s"}`;
+      document.getElementById("connectedCount").textContent = Object.keys(providers).filter(isProviderConnected).length;
+      document.getElementById("connectionSummary").textContent = `${Object.keys(providers).filter(isProviderConnected).length} providers connected`;
+      renderDashboard();
+    }
+
+    function isProviderConnected(id) {
+      return id === "custom" ? Boolean(customConfig.endpoint && customConfig.model) : Boolean(keys[id]);
+    }
+
+    function renderDashboard() {
+      document.getElementById("statConnected").textContent = Object.keys(providers).filter(isProviderConnected).length;
+      document.getElementById("statModels").textContent = lanes.length;
+      document.getElementById("statPrompts").textContent = promptsSent;
+      document.getElementById("statResponses").textContent = responsesReceived;
+      document.getElementById("activityContent").innerHTML = activity.length
+        ? `<table class="activity-table"><thead><tr><th>Prompt</th><th>Time</th><th>Responses</th></tr></thead><tbody>${activity.slice(0, 8).map((item) => `<tr><td title="${escapeHtml(item.prompt)}">${escapeHtml(item.prompt)}</td><td>${escapeHtml(item.time)}</td><td>${item.responses}</td></tr>`).join("")}</tbody></table>`
+        : `<div class="activity-table dashboard-empty">No prompts sent this session.</div>`;
+    }
+
+    function renderProviders(targetId = "providerList") {
+      const filter = targetId === "apiProviderList" ? document.getElementById("providerSearch").value.trim().toLowerCase() : "";
+      const entries = Object.entries(providers).filter(([, provider]) => provider.name.toLowerCase().includes(filter));
+      document.getElementById(targetId).innerHTML = entries.map(([id, provider]) => `
+        <section class="provider-row" data-provider="${id}">
+          <div class="provider-title"><span class="provider-mark ${provider.markClass || ""}">${provider.mark}</span><strong>${provider.name}</strong><span class="key-state">${isProviderConnected(id) ? "Connected" : "Not connected"}</span></div>
+          ${id === "custom" ? `<div class="custom-config"><input type="url" aria-label="OpenAI-compatible endpoint URL" placeholder="https://your-host/v1/chat/completions" value="${escapeHtml(customConfig.endpoint)}" data-endpoint><input type="text" aria-label="Custom model ID" placeholder="model-id" value="${escapeHtml(customConfig.model)}" data-model></div>` : ""}
+          <div class="key-input-row"><input type="password" autocomplete="off" spellcheck="false" aria-label="${provider.name} API key" placeholder="${provider.placeholder}" data-key="${id}"><button type="button" data-save="${id}">${isProviderConnected(id) ? "Update" : "Connect"}</button></div>
+          ${isProviderConnected(id) ? `<div class="key-actions"><span>Active for this session</span><button type="button" data-remove="${id}">Disconnect</button></div>` : ""}
+        </section>`).join("") + (entries.length ? `<div class="security-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg><span>Credentials stay in page memory. Requests are sent directly from your browser to each provider. Custom endpoints should support OpenAI-compatible chat completions.</span></div>` : `<div class="dashboard-empty">No providers match this filter.</div>`);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("visible"), 2800);
+    }
+
+    function openKeyDialog() {
+      renderProviders();
+      keysDialog.showModal();
+    }
+
+    function setView(view) {
+      currentView = view;
+      document.getElementById("dashboardView").hidden = view !== "dashboard";
+      document.getElementById("chatView").hidden = view !== "chat";
+      document.getElementById("chatComposer").hidden = view !== "chat";
+      document.getElementById("apiView").hidden = view !== "api";
+      document.getElementById("pageTitle").textContent = view === "dashboard" ? "Dashboard" : view === "api" ? "API" : "Chat";
+      for (const [id, name] of [["dashboardNav", "dashboard"], ["chatNav", "chat"], ["apiNav", "api"]]) {
+        const active = name === view;
+        document.getElementById(id).classList.toggle("active", active);
+        document.getElementById(id).toggleAttribute("aria-current", active);
+      }
+      if (view === "api") renderProviders("apiProviderList");
+      if (view === "dashboard") renderDashboard();
+    }
+
+    function addLane() {
+      if (lanes.length >= 12) return showToast("You can compare up to 12 models at a time.");
+      const usedProviders = lanes.map((lane) => lane.provider);
+      const provider = Object.keys(providers).find((id) => !usedProviders.includes(id)) || "custom";
+      const model = providers[provider].models[0].id;
+      lanes.push({ provider, model, turns: [], loading: false, error: "" });
+      renderModels();
+    }
+
+    async function requestModel(lane, prompt) {
+      const history = lane.turns.map((turn) => ({ role: turn.role, content: turn.content }));
+      lane.loading = true;
+      lane.error = "";
+      renderModels();
+      let succeeded = false;
+      try {
+        let response;
+        const provider = providers[lane.provider];
+        if (provider.protocol === "cohere") {
+          response = await fetch("https://api.cohere.com/v2/chat", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${keys.cohere}` }, body: JSON.stringify({ model: lane.model, messages: [...history, { role: "user", content: prompt }] }) });
+        } else if (provider.endpoint) {
+          const headers = { "Content-Type": "application/json" };
+          if (keys[lane.provider]) headers.Authorization = `Bearer ${keys[lane.provider]}`;
+          response = await fetch(provider.endpoint, { method: "POST", headers, body: JSON.stringify({ model: lane.model, messages: [...history, { role: "user", content: prompt }] }) });
+        } else if (provider.protocol === "anthropic") {
+          response = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": keys.anthropic, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: lane.model, max_tokens: 2048, messages: [...history, { role: "user", content: prompt }] }) });
+        } else {
+          const contents = [...history, { role: "user", content: prompt }].map((turn) => ({ role: turn.role === "assistant" ? "model" : "user", parts: [{ text: turn.content }] }));
+          response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(lane.model)}:generateContent?key=${encodeURIComponent(keys.gemini)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents }) });
+        }
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error?.message || `Request failed (${response.status})`);
+        const answer = provider.protocol === "cohere" ? data.message?.content?.filter((part) => part.type === "text").map((part) => part.text).join("\n") : provider.endpoint ? data.choices?.[0]?.message?.content : provider.protocol === "anthropic" ? data.content?.filter((part) => part.type === "text").map((part) => part.text).join("\n") : data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("");
+        if (!answer) throw new Error("The provider returned an empty response.");
+        lane.turns.push({ role: "user", content: prompt }, { role: "assistant", content: answer });
+        succeeded = true;
+      } catch (error) {
+        lane.error = error instanceof TypeError ? "Network or browser CORS error. Check your connection and provider settings." : error.message;
+      } finally {
+        lane.loading = false;
+        renderModels();
+      }
+      return succeeded;
+    }
+
+    document.getElementById("openKeys").addEventListener("click", openKeyDialog);
+    document.getElementById("dashboardNav").addEventListener("click", () => setView("dashboard"));
+    document.getElementById("chatNav").addEventListener("click", () => setView("chat"));
+    document.getElementById("apiNav").addEventListener("click", () => setView("api"));
+    document.getElementById("dashboardChat").addEventListener("click", () => setView("chat"));
+    document.getElementById("closeKeys").addEventListener("click", () => keysDialog.close());
+    document.getElementById("closeKeysIcon").addEventListener("click", () => keysDialog.close());
+    function handleProviderAction(event) {
+      const save = event.target.closest("[data-save]");
+      const remove = event.target.closest("[data-remove]");
+      if (save) {
+        const id = save.dataset.save;
+        const row = save.closest(".provider-row");
+        const input = row.querySelector(`[data-key="${id}"]`);
+        const value = input.value.trim();
+        if (id === "custom") {
+          const endpoint = row.querySelector("[data-endpoint]").value.trim();
+          const model = row.querySelector("[data-model]").value.trim();
+          try {
+            const parsedEndpoint = new URL(endpoint);
+            if (!/^https?:$/.test(parsedEndpoint.protocol)) throw new Error();
+          } catch {
+            return showToast("Enter a valid HTTP or HTTPS chat-completions endpoint.");
+          }
+          if (!model) return showToast("Enter the model ID used by this endpoint.");
+          customConfig.endpoint = endpoint;
+          customConfig.model = model;
+          providers.custom.endpoint = endpoint;
+          providers.custom.models = [{ id: model, name: model }];
+        } else if (!value) {
+          return showToast("Paste an API key to connect this provider.");
+        }
+        keys[id] = value;
+        renderProviders();
+        renderProviders("apiProviderList");
+        renderModels();
+        showToast(`${providers[id].name} configured for this session.`);
+      }
+      if (remove) {
+        keys[remove.dataset.remove] = "";
+        if (remove.dataset.remove === "custom") {
+          customConfig.endpoint = "";
+          customConfig.model = "";
+          delete providers.custom.endpoint;
+          providers.custom.models = [{ id: "", name: "Custom model" }];
+        }
+        renderProviders();
+        renderProviders("apiProviderList");
+        renderModels();
+        showToast(`${providers[remove.dataset.remove].name} disconnected.`);
+      }
+    }
+    document.getElementById("providerList").addEventListener("click", handleProviderAction);
+    document.getElementById("apiProviderList").addEventListener("click", handleProviderAction);
+    document.getElementById("providerSearch").addEventListener("input", () => renderProviders("apiProviderList"));
+    modelGrid.addEventListener("change", (event) => {
+      if (!event.target.matches(".model-select")) return;
+      const lane = lanes[Number(event.target.dataset.lane)];
+      lane.model = event.target.value;
+      lane.turns = [];
+      lane.error = "";
+      renderModels();
+    });
+    modelGrid.addEventListener("click", (event) => {
+      const remove = event.target.closest(".remove-lane");
+      if (remove && lanes.length > 1) {
+        lanes.splice(Number(remove.dataset.lane), 1);
+        renderModels();
+      }
+      if (event.target.closest('[data-action="connect"]')) setView("api");
+    });
+    document.getElementById("addModel").addEventListener("click", addLane);
+    document.getElementById("chatForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (activeRequests) return;
+      const input = document.getElementById("promptInput");
+      const prompt = input.value.trim();
+      if (!prompt) return;
+      const connected = lanes.filter((lane) => isProviderConnected(lane.provider));
+      if (!connected.length) {
+        showToast("Connect at least one provider before sending a prompt.");
+        return openKeyDialog();
+      }
+      document.getElementById("latestPrompt").textContent = prompt;
+      document.getElementById("promptTime").textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      input.value = "";
+      promptsSent++;
+      activeRequests++;
+      document.getElementById("sendButton").disabled = true;
+      const results = await Promise.all(connected.map((lane) => requestModel(lane, prompt)));
+      const received = results.filter(Boolean).length;
+      responsesReceived += received;
+      activity.unshift({ prompt, time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }), responses: received });
+      renderDashboard();
+      activeRequests--;
+      document.getElementById("sendButton").disabled = false;
+      const unconnectedCount = lanes.length - connected.length;
+      if (unconnectedCount) showToast(`${connected.length} response${connected.length === 1 ? "" : "s"} received. Connect the other provider${unconnectedCount === 1 ? "" : "s"} to include them.`);
+    });
+    document.getElementById("promptInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+        event.preventDefault();
+        document.getElementById("chatForm").requestSubmit();
+      }
+    });
+    document.getElementById("clearThread").addEventListener("click", () => {
+      lanes.forEach((lane) => { lane.turns = []; lane.error = ""; });
+      document.getElementById("latestPrompt").textContent = "Send a prompt to compare responses from the selected models.";
+      document.getElementById("promptTime").textContent = "Ready when you are";
+      renderModels();
+      showToast("Comparison cleared.");
+    });
+    document.getElementById("newThread").addEventListener("click", () => document.getElementById("clearThread").click());
+    renderModels();
+  </script>
+  <script src="/app.js" defer></script>
+</body>
+</html>
